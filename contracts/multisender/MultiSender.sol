@@ -2,6 +2,7 @@
 pragma solidity ^0.8.28;
 
 import "./IERC20.sol";
+import "./SafeERC20.sol";
 import "./ReentrancyGuard.sol";
 import "./Ownable.sol";
 
@@ -10,6 +11,7 @@ import "./Ownable.sol";
  * @dev A contract that can send native tokens (ETH) and ERC20 tokens to multiple addresses simultaneously
  */
 contract MultiSender is ReentrancyGuard, Ownable {
+    using SafeERC20 for IERC20;
     
     // Event definitions (indexed for gas optimization)
     event NativeTokensSent(address indexed sender, uint256 totalAmount, uint256 recipientCount);
@@ -123,26 +125,17 @@ contract MultiSender is ReentrancyGuard, Ownable {
         
         // First transfer tokens to contract for distribution
         IERC20 tokenContract = IERC20(token);
-        require(
-            tokenContract.transferFrom(msg.sender, address(this), requiredAmount),
-            "MultiSender: token transfer failed"
-        );
+        tokenContract.safeTransferFrom(msg.sender, address(this), requiredAmount);
         
         // Send tokens to each recipient
         for (uint256 i = 0; i < length;) {
-            require(
-                tokenContract.transfer(recipients[i], amounts[i]),
-                "MultiSender: token transfer to recipient failed"
-            );
+            tokenContract.safeTransfer(recipients[i], amounts[i]);
             unchecked { ++i; }
         }
         
         // Send fee to collector
         if (fee > 0) {
-            require(
-                tokenContract.transfer(feeCollector, fee),
-                "MultiSender: fee transfer failed"
-            );
+            tokenContract.safeTransfer(feeCollector, fee);
         }
         
         emit ERC20TokensSent(token, msg.sender, totalAmount, recipients.length);
@@ -181,7 +174,7 @@ contract MultiSender is ReentrancyGuard, Ownable {
             // Withdraw ERC20 token
             IERC20 tokenContract = IERC20(token);
             require(tokenContract.balanceOf(address(this)) >= amount, "MultiSender: insufficient token balance");
-            require(tokenContract.transfer(owner(), amount), "MultiSender: token transfer failed");
+            tokenContract.safeTransfer(owner(), amount);
         }
         
         emit EmergencyWithdraw(token, amount);
