@@ -1,6 +1,14 @@
 {
   "name": "multisender",
   "version": "1.0.0",
+  "scripts": {
+    "deploy:factory": "npx hardhat run scripts/deploy-factory.js",
+    "deploy:factory:mainnet": "npx hardhat run scripts/deploy-factory.js --network mainnet",
+    "deploy:factory:polygon": "npx hardhat run scripts/deploy-factory.js --network polygon",
+    "deploy:factory:bsc": "npx hardhat run scripts/deploy-factory.js --network bsc",
+    "calculate:address": "npx hardhat run scripts/calculate-address.js",
+    "test:factory": "npx hardhat test test/MultiSenderFactory.js"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
     "@nomicfoundation/hardhat-ethers": "^3.1.0",
@@ -19,6 +27,7 @@
     "typechain": "^8.3.2"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.4.0"
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.2"
   }
 }
